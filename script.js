@@ -21,7 +21,6 @@ function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-// Calculate Euclidean distance between two points
 function getDistance(p1, p2) {
     return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
 }
@@ -69,13 +68,11 @@ function spawnCentroids() {
     stepBtn.onclick = assignPoints;
 }
 
-// NEW: Calculate distances and assign clusters
 function assignPoints() {
     points.forEach(p => {
         let minDistance = Infinity;
         let closestCentroid = -1;
 
-        // Check distance to every centroid
         centroids.forEach(c => {
             let d = getDistance(p, c);
             if (d < minDistance) {
@@ -84,22 +81,55 @@ function assignPoints() {
             }
         });
 
-        // Assign to the closest one
         p.cluster = closestCentroid;
     });
 
     draw();
 
-    // Update UI state for the next phase
     statusText.innerText = "Status: Points assigned to nearest centroid.";
     stepBtn.innerText = "4. Move Centroids";
     stepBtn.onclick = updateCentroids;
 }
 
-// Placeholder for the next step
+// NEW: Calculate the center of each cluster and move the centroid there
 function updateCentroids() {
-    console.log("Next up: Moving centroids to the center of their clusters!");
-    statusText.innerText = "Status: Centroids moved (Check console).";
+    let moved = false; // We use this flag to check if the algorithm has finished (converged)
+
+    centroids.forEach(c => {
+        // Get all points assigned to this specific centroid
+        const clusterPoints = points.filter(p => p.cluster === c.id);
+
+        if (clusterPoints.length > 0) {
+            // Calculate the average X and Y coordinates
+            const sumX = clusterPoints.reduce((sum, p) => sum + p.x, 0);
+            const sumY = clusterPoints.reduce((sum, p) => sum + p.y, 0);
+            const newX = sumX / clusterPoints.length;
+            const newY = sumY / clusterPoints.length;
+
+            // Check if the centroid is actually moving to a new spot
+            if (Math.abs(c.x - newX) > 0.1 || Math.abs(c.y - newY) > 0.1) {
+                moved = true;
+            }
+
+            // Update to the new center
+            c.x = newX;
+            c.y = newY;
+        }
+    });
+
+    draw();
+
+    // If centroids moved, we need to re-assign points based on new positions.
+    // If they didn't move, the algorithm has naturally finished!
+    if (moved) {
+        statusText.innerText = "Status: Centroids moved to the mean. Ready to re-assign.";
+        stepBtn.innerText = "3. Assign Points";
+        stepBtn.onclick = assignPoints;
+    } else {
+        statusText.innerText = "Status: Converged! The clusters are stable.";
+        stepBtn.innerText = "Done!";
+        stepBtn.disabled = true;
+    }
 }
 
 function draw() {
