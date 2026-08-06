@@ -8,31 +8,35 @@ const statusText = document.getElementById('statusText');
 
 // --- State Variables ---
 let points = [];
-let centroids = []; // Array to hold our cluster centers
+let centroids = []; 
 const numPoints = 200;
 const pointRadius = 4;
 
-// K-Means Settings
-const k = 3; // Number of clusters
-const colors = ['#ef4444', '#3b82f6', '#10b981']; // Red, Blue, Green
-const centroidRadius = 8; // Make them bigger than data points
+const k = 3; 
+const colors = ['#ef4444', '#3b82f6', '#10b981']; 
+const centroidRadius = 8; 
 
 // --- Helper Functions ---
 function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+// Calculate Euclidean distance between two points
+function getDistance(p1, p2) {
+    return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
+}
+
 // --- Core Logic ---
 function spawnData() {
     points = [];
-    centroids = []; // Clear any existing centroids
+    centroids = []; 
     const padding = 20; 
     
     for (let i = 0; i < numPoints; i++) {
         points.push({
             x: getRandomInt(padding, canvas.width - padding),
             y: getRandomInt(padding, canvas.height - padding),
-            cluster: -1 // -1 means no cluster assigned yet
+            cluster: -1 
         });
     }
     
@@ -45,9 +49,8 @@ function spawnData() {
 
 function spawnCentroids() {
     centroids = [];
-    const padding = 30; // Keep them slightly away from the absolute edges
+    const padding = 30; 
     
-    // Spawn 'k' centroids
     for (let i = 0; i < k; i++) {
         centroids.push({
             x: getRandomInt(padding, canvas.width - padding),
@@ -59,41 +62,62 @@ function spawnCentroids() {
     
     draw();
     
-    // Update UI state
     statusText.innerText = "Status: Centroids dropped. Ready to assign points.";
-    initBtn.disabled = true; // Lock the init button
-    stepBtn.disabled = false; // Unlock the step button
+    initBtn.disabled = true; 
+    stepBtn.disabled = false; 
     stepBtn.innerText = "3. Assign Points";
     stepBtn.onclick = assignPoints;
 }
 
-// Placeholder for the math step
+// NEW: Calculate distances and assign clusters
 function assignPoints() {
-    console.log("Math incoming: calculating distance to nearest centroid.");
-    statusText.innerText = "Status: Points assigned (Check console).";
+    points.forEach(p => {
+        let minDistance = Infinity;
+        let closestCentroid = -1;
+
+        // Check distance to every centroid
+        centroids.forEach(c => {
+            let d = getDistance(p, c);
+            if (d < minDistance) {
+                minDistance = d;
+                closestCentroid = c.id;
+            }
+        });
+
+        // Assign to the closest one
+        p.cluster = closestCentroid;
+    });
+
+    draw();
+
+    // Update UI state for the next phase
+    statusText.innerText = "Status: Points assigned to nearest centroid.";
+    stepBtn.innerText = "4. Move Centroids";
+    stepBtn.onclick = updateCentroids;
+}
+
+// Placeholder for the next step
+function updateCentroids() {
+    console.log("Next up: Moving centroids to the center of their clusters!");
+    statusText.innerText = "Status: Centroids moved (Check console).";
 }
 
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // 1. Draw all data points
     points.forEach(p => {
         ctx.beginPath();
         ctx.arc(p.x, p.y, pointRadius, 0, Math.PI * 2);
-        // If assigned, use centroid color. Otherwise, stay neutral gray.
         ctx.fillStyle = p.cluster === -1 ? '#94a3b8' : colors[p.cluster];
         ctx.fill();
         ctx.closePath();
     });
 
-    // 2. Draw the centroids
     centroids.forEach(c => {
         ctx.beginPath();
-        // Draw squares for centroids so they pop visually
         ctx.rect(c.x - centroidRadius, c.y - centroidRadius, centroidRadius * 2, centroidRadius * 2);
         ctx.fillStyle = c.color;
         ctx.fill();
-        // Add a bold outline
         ctx.lineWidth = 2;
         ctx.strokeStyle = '#0f172a';
         ctx.stroke();
