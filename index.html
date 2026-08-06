@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K-Means Visualized</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>K-Means Clustering</h1>
+            <p>Watch how data points find their groups, step by step.</p>
+        </header>
+        
+        <main>
+            <!-- The blank canvas where the magic happens -->
+            <canvas id="canvas" width="600" height="400"></canvas>
+            
+            <div class="controls">
+                <button id="initBtn">1. Spawn Data</button>
+                <button id="stepBtn" disabled>2. Next Step</button>
+                <button id="resetBtn">Reset</button>
+            </div>
+            
+            <div class="status">
+                <p id="statusText">Status: Waiting to start...</p>
+            </div>
+        </main>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
