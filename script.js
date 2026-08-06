@@ -8,21 +8,24 @@ const statusText = document.getElementById('statusText');
 
 // --- State Variables ---
 let points = [];
-const numPoints = 200; // Number of dots on screen
+let centroids = []; // Array to hold our cluster centers
+const numPoints = 200;
 const pointRadius = 4;
 
+// K-Means Settings
+const k = 3; // Number of clusters
+const colors = ['#ef4444', '#3b82f6', '#10b981']; // Red, Blue, Green
+const centroidRadius = 8; // Make them bigger than data points
 
-// Generates a random number within a specific range
+// --- Helper Functions ---
 function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 // --- Core Logic ---
-// 1. Generate random data points across the canvas
 function spawnData() {
     points = [];
-    
-    // Add padding so points don't spawn right on the border
+    centroids = []; // Clear any existing centroids
     const padding = 20; 
     
     for (let i = 0; i < numPoints; i++) {
@@ -35,42 +38,82 @@ function spawnData() {
     
     draw();
     
-    // Update UI state
     statusText.innerText = "Status: Data spawned. Ready to drop centroids.";
     initBtn.innerText = "2. Drop Centroids";
-    initBtn.onclick = spawnCentroids; // Change button action for the next step
+    initBtn.onclick = spawnCentroids;
 }
 
 function spawnCentroids() {
-    console.log("Centroids will spawn next!");
-    statusText.innerText = "Status: Centroids dropped (Check console).";
+    centroids = [];
+    const padding = 30; // Keep them slightly away from the absolute edges
+    
+    // Spawn 'k' centroids
+    for (let i = 0; i < k; i++) {
+        centroids.push({
+            x: getRandomInt(padding, canvas.width - padding),
+            y: getRandomInt(padding, canvas.height - padding),
+            color: colors[i],
+            id: i
+        });
+    }
+    
+    draw();
+    
+    // Update UI state
+    statusText.innerText = "Status: Centroids dropped. Ready to assign points.";
+    initBtn.disabled = true; // Lock the init button
+    stepBtn.disabled = false; // Unlock the step button
+    stepBtn.innerText = "3. Assign Points";
+    stepBtn.onclick = assignPoints;
 }
 
-// Draw the current state to the canvas
+// Placeholder for the math step
+function assignPoints() {
+    console.log("Math incoming: calculating distance to nearest centroid.");
+    statusText.innerText = "Status: Points assigned (Check console).";
+}
+
 function draw() {
-    // Clear the canvas for the new frame
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
-    // Draw all data points
+    // 1. Draw all data points
     points.forEach(p => {
         ctx.beginPath();
         ctx.arc(p.x, p.y, pointRadius, 0, Math.PI * 2);
-        ctx.fillStyle = '#94a3b8'; // Neutral slate gray for unassigned points
+        // If assigned, use centroid color. Otherwise, stay neutral gray.
+        ctx.fillStyle = p.cluster === -1 ? '#94a3b8' : colors[p.cluster];
         ctx.fill();
+        ctx.closePath();
+    });
+
+    // 2. Draw the centroids
+    centroids.forEach(c => {
+        ctx.beginPath();
+        // Draw squares for centroids so they pop visually
+        ctx.rect(c.x - centroidRadius, c.y - centroidRadius, centroidRadius * 2, centroidRadius * 2);
+        ctx.fillStyle = c.color;
+        ctx.fill();
+        // Add a bold outline
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#0f172a';
+        ctx.stroke();
         ctx.closePath();
     });
 }
 
-// Reset everything to the initial state
 function reset() {
     points = [];
+    centroids = [];
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     
     statusText.innerText = "Status: Waiting to start...";
     initBtn.innerText = "1. Spawn Data";
+    initBtn.disabled = false;
     initBtn.onclick = spawnData;
     
     stepBtn.disabled = true;
+    stepBtn.innerText = "2. Next Step";
+    stepBtn.onclick = null;
 }
 
 // --- Event Listeners ---
