@@ -1,8 +1,10 @@
 ﻿# K-Means Clustering Visualized
 
 A lightweight, interactive web animation that explains how the K-Means clustering algorithm works. No complex math jargon, just dots finding their groups.
-Check it out live: [https://imhammad.github.io/k-means-visualized/]
 
+<div align="center">
+  <img src="k-means-demo.gif" alt="K-Means Clustering Animation" />
+</div>
 
 
 ## The Concept in Plain English
@@ -42,4 +44,4 @@ On Windows: start index.html
 Or just drag and drop the index.html file right into an open browser tab.
 
 Live Demo
-Check out the live visualization here: []
+Check out the live visualization here: [https://imhammad.github.io/k-means-visualized/]
